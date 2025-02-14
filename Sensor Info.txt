@@ -56,22 +56,61 @@ This Area is for data input of ID Mapping
 55.EEPROM Writing Resister Address 6(Barocde) = 0x7D31
 
 
-Q5_Wide
+
+=========================================
+This Area is for data input of ID Mapping
+=========================================
+
+Model Name : Q5_Wide
+
 sensor ID read
 ...
 ..
-
+# Power setting
 pwr, 0x00, 0x00, 0x018
 pwr, 0x00, 0x01, 0x028
-
 pwr, 0x01, 0x00, 0x01
 pwr, 0x01, 0x01, 0x01
 pwr, 0x01, 0xff, 0x01
-
 rest, 0x00
 reset, 0x01
 
+# Slave address setting
+Sensor, 0x20
+EEPROM, 0xA0
+AF Driver IC (if necessary), 0x
+OIS Driver IC (if necessary) X, 0x
+OIS Driver IC (if necessary) Y, 0x
+
+# Sensor streaming setting
+0x20, W, 0x0100, 0x01           # Streaming on
+delay, 10                       # [ms]
+0x20, W, 0x0A02, 0x00           # Page select
+delay, 10                       # [ms]
+0x20, W, 0x0A02, 0x00           # Read start
+delay, 10                       # [ms]
+0x20, R, 0x0A3C, 6              # OTP Read (마지막 6은 Read count)
+delay, 10                       # [ms]
+0x20, W, 0x0A00, 0x00           # Read stop
+delay, 10                       # [ms]
+0x20, R, 0x0019, 1              # Flag_2
+delay, 10                       # [ms]
+0x20, R, 0x0002, 2              # Sensor version
+delay, 10                       # [ms]
+0x20, R, 0x000D, 2              # Feature ID
+delay, 10                       # [ms]
+0x20, R, 0x0000, 2              # Model ID
+delay, 10                       # [ms]
+0x20, R, 0x0016, 1              # Flag_0
+delay, 10                       # [ms]
+0x20, R, 0x0018, 1              # Flag_1
+
+# EEPROM Writing setting
+
+
+
 delay, 0x0A   // 10ms
+
 
 i2c, 0x20, W, 0x0100, 0x01    // 스트리밍 On
 0x20, W, 0x0A02, 0x00
@@ -100,4 +139,3 @@ E2P Write
 E2P Prot Enable
 
 pwr, 0xff, 0x00
-
