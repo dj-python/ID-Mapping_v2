@@ -55,17 +55,12 @@ This Area is for data input of ID Mapping
   -> Data : H18/00B8/00BC/00BD/00C0
 55.EEPROM Writing Resister Address 6(Barocde) = 0x7D31
 
-
-
 =========================================
 This Area is for data input of ID Mapping
 =========================================
 
 Model Name : Q5_Wide
 
-sensor ID read
-...
-..
 # Power setting
 pwr, 0x00, 0x00, 0x018
 pwr, 0x00, 0x01, 0x028
@@ -82,35 +77,55 @@ AF Driver IC (if necessary), 0x
 OIS Driver IC (if necessary) X, 0x
 OIS Driver IC (if necessary) Y, 0x
 
+==== Sequence Area ===
+
+# EEPROM Writing Protection disable
+W, 0xA000, 0x00
+
 # Sensor streaming setting
-0x20, W, 0x0100, 0x01           # Streaming on
+W, 0x0100, 0x01           # Streaming on
 delay, 10                       # [ms]
-0x20, W, 0x0A02, 0x00           # Page select
+W, 0x0A02, 0x00           # Page select
 delay, 10                       # [ms]
-0x20, W, 0x0A02, 0x00           # Read start
+W, 0x0A02, 0x00           # Read start
 delay, 10                       # [ms]
-0x20, R, 0x0A3C, 6              # OTP Read (마지막 6은 Read count)
+R, 0x0A3C, 6              # OTP Read (마지막 6은 Read count)
 delay, 10                       # [ms]
-0x20, W, 0x0A00, 0x00           # Read stop
+W, 0x0A00, 0x00           # Read stop
 delay, 10                       # [ms]
-0x20, R, 0x0019, 1              # Flag_2
+R, 0x0019, 1              # Flag_2
 delay, 10                       # [ms]
-0x20, R, 0x0002, 2              # Sensor version
+R, 0x0002, 2              # Sensor version
 delay, 10                       # [ms]
-0x20, R, 0x000D, 2              # Feature ID
+R, 0x000D, 2              # Feature ID
 delay, 10                       # [ms]
-0x20, R, 0x0000, 2              # Model ID
+R, 0x0000, 2              # Model ID
 delay, 10                       # [ms]
-0x20, R, 0x0016, 1              # Flag_0
+R, 0x0016, 1              # Flag_0
 delay, 10                       # [ms]
-0x20, R, 0x0018, 1              # Flag_1
+R, 0x0018, 1              # Flag_1
+
+# OTP Data Decode
+OTP Data Decode = 1             # Enable 1, Disable 0
 
 # EEPROM Writing setting
+W, 0x00B8, 4              # 마지막 4는 Bytes 수
+W, 0x00BC, 1
+W, 0x00BD, 3
+W, 0x00C0, 8
+W, 0x7D31,
+
+# EEPROM Writing Protection Enable
+W, 0xA000,0x0E
+
+
+
+
+
 
 
 
 delay, 0x0A   // 10ms
-
 
 i2c, 0x20, W, 0x0100, 0x01    // 스트리밍 On
 0x20, W, 0x0A02, 0x00
