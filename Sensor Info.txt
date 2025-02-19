@@ -1,54 +1,57 @@
-=========================================
-This Area is for data input of ID Mapping
-=========================================
+# =========================================
+# This Area is for data input of ID Mapping
+# =========================================
 
-============= setting Area ==============
+# ============= setting Area ==============
 Model Name : Q5_Wide
 
 # Power setting
-pwr, 0x01, 0x00, 0x092
-pwr, 0x01, 0x01, 0x092
-pwr, 0x01, 0x00, 0x22
-pwr, 0x01, 0x01, 0x18
-pwr, 0x01, 0xff, 0x32
-pwr, 0x01, 0xff, 0x32
-pwr, 0x00, 0xff, 0x00
+pwr1, 0x01, 0x00, 0x092        # slave address(Mux)(TBD), 파워업 시퀀스, 전압값
+pwr2, 0x01, 0x01, 0x092
+pwr3, 0x01, 0x00, 0x22
+pwr4, 0x01, 0x01, 0x18
+pwr5, 0x01, 0xff, 0x32
+pwr6, 0x01, 0xff, 0x32
+pwr7, 0x00, 0xff, 0x00
 reset, 0x01, 0x018
 
-# Slave address setting
-Sensor, 0x20
-EEPROM, 0xA0
-AF Driver IC (if necessary), 0x
-OIS Driver IC (if necessary) X, 0x
-OIS Driver IC (if necessary) Y, 0x
+# Power up sequence
+Sequence Enable = 1
+delay, 100
 
-============== Sequence Area =============
+# Slave address setting
+# Sensor, 0x20
+# EEPROM, 0xA0
+# AF Driver IC (if necessary), 0x7C
+
+# ============== Sequence Area =============
 
 # EEPROM Writing Protection disable
 W, 0xA000, 0x00
 
+    $$$ 앞 변수를 S가 아니라 slave address 직접 입력
 # Sensor streaming setting
-W, 0x0100, 0x01           # Streaming on
+0x20, W, 0x0100, 0x01                 # Streaming on
 delay, 10                       # [ms]
-W, 0x0A02, 0x00           # Page select
+0x20, W, 0x0A02, 0x00                 # Page select
 delay, 10                       # [ms]
-W, 0x0A02, 0x00           # Read start
+0x20, W, 0x0A02, 0x00                 # Read start
 delay, 10                       # [ms]
-R, 0x0A3C, 6              # OTP Read (마지막 6은 Read count)     # 중간의 D는 Decoding 해야한다는 뜻
+S, R, 0x0A3C, 6, D                 # OTP Read (마지막 6은 Read count)     # 중간의 D는 Decoding 해야한다는 뜻
 delay, 10                       # [ms]
-W, 0x0A00, 0x00           # Read stop
+S, W, 0x0A00, 0x00                 # Read stop
 delay, 10                       # [ms]
-R, 0x0019, 1              # Flag_2
+S, R, 0x0019, 1                    # Flag_2
 delay, 10                       # [ms]
-R, 0x0002, 2              # Sensor version
+S, R, 0x0002, 2                    # Sensor version
 delay, 10                       # [ms]
-R, 0x000D, 2              # Feature ID
+S, R, 0x000D, 2                    # Feature ID
 delay, 10                       # [ms]
-R, 0x0000, 2              # Model ID
+S, R, 0x0000, 2                    # Model ID
 delay, 10                       # [ms]
-R, 0x0016, 1              # Flag_0
+S, R, 0x0016, 1                    # Flag_0
 delay, 10                       # [ms]
-R, 0x0018, 1              # Flag_1
+S, R, 0x0018, 1                    # Flag_1
 
 # EEPROM Writing setting
 W, 0x00B8, 4              # 마지막 4는 Bytes 수
