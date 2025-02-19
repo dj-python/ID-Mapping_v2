@@ -18,9 +18,15 @@ class MainGUI:
         self.MainWindow.show()
         self.currentTime = ''
 
+        self.sensor_Streaming_start_line = None
+
         # 취득한 Sensor ID 변수 : 두번 확인해서 비교해야 하므로 2개씩 할당
         self.SensorID1 = None
         self.SensorID2 = None
+
+        self.Sensor_SlaveID = None
+        self.EEPROM_SlaveID = None
+        self.AFDriver_SlaveID = None
 
         # 연속실행 변수
         self.isExecProcess = False
@@ -58,15 +64,42 @@ class MainGUI:
                 return extracted_value
             return ''
 
-    def streaming_setting(self):
+
+
+    # 어떤 문장이 있는지 받아서 그 다음열의 인덱스를 리턴
+    def index_find(self, target: str):
         with open('Sensor Info.txt', 'r', encoding='utf-8') as file:
             lines = file.readlines()
         for index, line in enumerate(lines):
-            if '# Sensor' in line:
-                if index + 1< len(lines):
-                    return lines[index+1].strip()
+            if target in line:
+                return lines[index + 1]
+            else:
+                pass
+
+        # 1칸씩 건너 뛰면서 Slave address check하고
+        # -> Slave address가 같으면 동작 수행
+
+    def Streaming_Sensor(self):
+        index = self.index_find('* Sensor')
+
+
+
+
+
+
+
+
+
+    def streaming_start(self):
+        with open('Sensor Info.txt', 'r', encoding='utf-8') as file:
+            lines = file.readlines()
+
+        config.Slave_IDs = 'H10' + 'self.'
+
+
         return None
 
+    def streaming_start(self):
 
         self.file_open = open('Sensor Info.txt', 'r')
         self.All_Info_data = self.file_open.readlines()
