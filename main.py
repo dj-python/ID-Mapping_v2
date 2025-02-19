@@ -49,7 +49,7 @@ class MainGUI:
         self.update_text_browser("[*] 서버 시작됨")
 
     # 텍스트 파일에서 '0x' 이후의 문자열만 추출하여 각 변수에 저장
-    def extract_info(self, index):
+    def Sensor_extract_info(self, index):
         if '0x' in self.All_Info_data[index]:
             start_index = self.All_Info_data[index].index('0x')
             extracted_value = self.All_Info_data[index][start_index+2:start_index+6]
@@ -57,6 +57,20 @@ class MainGUI:
                 print(extracted_value)
                 return extracted_value
             return ''
+
+    def streaming_setting(self):
+        with open('Sensor Info.txt', 'r', encoding='utf-8') as file:
+            lines = file.readlines()
+        for index, line in enumerate(lines):
+            if '# Sensor' in line:
+                if index + 1< len(lines):
+                    return lines[index+1].strip()
+        return None
+
+
+        self.file_open = open('Sensor Info.txt', 'r')
+        self.All_Info_data = self.file_open.readlines()
+        self.file_open.close()
 
 
 
