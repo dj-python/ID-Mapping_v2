@@ -58,7 +58,6 @@ class MainGUI:
                 return extracted_value
             return ''
 
-    # Streaming data 취합하여
     def streaming_setting(self):
         with open('Sensor Info.txt', 'r', encoding='utf-8') as file:
             lines = file.readlines()
@@ -72,6 +71,7 @@ class MainGUI:
         self.file_open = open('Sensor Info.txt', 'r')
         self.All_Info_data = self.file_open.readlines()
         self.file_open.close()
+
 
 
 
