@@ -6,6 +6,8 @@ from PyQt5.QtCore import pyqtSignal, QThread
 import socket
 from tcp_server import TCPServer
 import config
+import os
+
 
 class MainGUI:
     def __init__(self):
@@ -29,7 +31,7 @@ class MainGUI:
 
         # region button clicked
         self.ui.pushButton_connect.clicked.connect(self.connection)
-        self.ui.pushButton_Get_SensorID.clicked.connect(self.Send_Info)
+        self.ui.pushButton_Get_SensorID.clicked.connect(self.open_file_dialog)
 
         # txt 파일로부터 읽어오는 Info 변수
         self.file_open = None
@@ -45,6 +47,14 @@ class MainGUI:
         self.connMain.start()
         self.update_text_browser("[*] 서버 시작됨")
 
+    def open_file_dialog(self):
+        options = QtWidgets.QFileDialog.Options()
+        options |= QtWidgets.QFileDialog.ReadOnly
+        file_name, _ = QtWidgets.QFileDialog.getOpenFileName(self.MainWindow, "Open txt File", "Text Files (*.txt);;All files (*)", options=options)
+        if file_name:
+            self.Send_Info(file_name)
+
+
     # 텍스트 파일에서 '0x' 이후의 문자열만 추출하여 각 변수에 저장
     def Sensor_extract_info(self, index):
         if '0x' in self.All_Info_data[index]:
@@ -56,14 +66,35 @@ class MainGUI:
             return ''
 
     # Sensor Info.txt 파일을 한줄씩 PICO로 전송
-    def Send_Info(self):
-        self.file_open = open('Sensor Info.txt', 'r', encoding='utf-8')
-        self.All_Info_data = self.file_open.readlines()
-        self.file_open.close()
-        for line in self.All_Info_data:
-            self.connMain.conn.sendall(line.encode('utf-8'))
-            self.update_text_browser(f"[서버] 데이터 전송 : {line.strip()}")
-            time.sleep(0.01)
+    def Send_Info(self, file_path):
+        try :
+            if not os.path.exists(file_path):
+                self.update_text_browser("[Error] 선택한 파일이 존재하지 않습니다.")
+                return
+
+            with open(file_path, 'r', encoding='utf-8') as self.file_open:
+                self.All_Info_data = self.file_open.readlines()
+
+            if not self.All_Info_data:
+                self.update_text_browser("[Error] 선택한 파일이 비어 있습니다.")
+                return
+
+            for line in self.All_Info_data:
+                try :
+                    self.connMain.conn.sendall(line.encode('utf-8'))
+                    self.update_text_browser(f"[서버] 데이터 전송 : {line.strip()}")
+                    time.sleep(0.01)
+                except Exception as e:
+                    self.update_text_browser(f"[Error] 데이터 전송 실패: {str(e)}")
+                    return
+        except Exception as e:
+            self.update_text_browser(f"[Error] 파일 읽기 실패 : {str(e)}")
+
+
+
+
+
+
 
 
 
