@@ -1,11 +1,12 @@
+# Entry Point
+
 import time
 from ID_Mapping_Test_UI import Ui_MainWindow
 from PyQt5 import QtWidgets
 import sys
 from PyQt5.QtCore import pyqtSignal, QThread
 import socket
-from tcp_server import TCPServer
-import config
+from c_tcp_server import TCPServer
 import os
 
 
@@ -37,11 +38,14 @@ class MainGUI:
         self.file_open = None
         self.All_Info_data = None
 
+        self.serverIp = '127.0.0.0'
+        self.serverPort = 8000
+
         sys.exit(app.exec_())
 
     # 클라이언트와 연결
     def connection(self):
-        self.connMain = TCPServer(self, config.serverIp, config.serverPort)
+        self.connMain = TCPServer(self, self.serverIp, self.serverPort)
         self.connMain.data_received.connect(self.update_text_browser)
 
         self.connMain.start()

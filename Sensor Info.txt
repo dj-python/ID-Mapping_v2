@@ -1,11 +1,11 @@
-# =========================================
-# This Area is for data input of ID Mapping
-# =========================================
+* =========================================
+* This Area is for data input of ID Mapping
+* =========================================
 
-# ============= setting Area ==============
+* ============= setting Area ==============
 Model Name : Q5_Wide
 
-# Power setting
+* Power setting
 pwr1, 0x01, 0x00, 0x092        # slave address(Mux)(TBD), 파워업 시퀀스, 전압값
 pwr2, 0x01, 0x01, 0x092
 pwr3, 0x01, 0x00, 0x22
@@ -15,8 +15,9 @@ pwr6, 0x01, 0xff, 0x32
 pwr7, 0x00, 0xff, 0x00
 reset, 0x01, 0x018
 
-# Power up sequence
+* Power up sequence
 Sequence Enable = 1
+Sequence = 1,2,3,4,5,6
 delay, 100
 
 * Slave address setting
@@ -24,9 +25,9 @@ Sensor, 0x20
 EEPROM, 0xA0
 AF Driver IC (if necessary), 0x7C
 
-#* ============== Sequence Area =============
+* ============== Sequence Area =============
 
-# EEPROM Writing Protection disable
+* EEPROM Writing Protection disable
 W, 0xA000, 0x00
 
 * Sensor streaming setting
