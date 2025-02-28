@@ -113,6 +113,55 @@ class MainPusher:
 
 
     def execProcess_loadUnload(self):
+        if self.rxMessage[3:5] == '00':
+            if self.idxExecProcess_loadUnload == 1:                     # Pusher 전진 동작
+                self.set_gpioOut(self.gpioOut_pusherFront, True)
+                self.set_gpioOut(self.gpioOut_pusherBack, False)
+                self.idxExecProcess_loadUnload += 1
+            elif self.idxExecProcess_loadUnload == 2:                   # Pusher 전진 확인
+                self.pusherError = PusherError.PUSHER_FRONT
+                if self.gpioIn_PusherFront:
+                    self.cntTimeOutExecProcess = 0
+                    self.cntExecProcess = 0
+                    self.idxExecProcess_loadUnload += 1
+            elif self.idxExecProcess_loadUnload == 3:                   # delay 500ms 부여 구간
+                self.cntExecProcess += 1
+                if self.cntExecProcess >= 5:
+                    self.cntTimeOutExecProcess = 0
+                    self.idxExecProcess_loadUnload += 1
+            elif self.idxExecProcess_loadUnload ==4:                   # Pusher 하강 동작
+                self.set_gpioOut(self.gpioOut_pusherUp, False)
+                self.set_gpioOut(self.gpioOut_pusherDown, True)
+                self.cntExecProcess = 0
+                self.idxExecProcess_loadUnload += 1
+            elif self.idxExecProcess_loadUnload == 5:                   # Pusher 하강 확인
+                self.pusherError = PusherError.PUSHER_DOWN
+                if self.gpioIn_PusherDown:
+                    self.isExecProcess_loadUnload = False
+                    self.pusherStatus = PusherStatus.READY
+                    self.pusherError = PusherError.NONE
+                    self.replyMessage('S' + self.rxMessage[1:5] + '000')
+        self.cntTimeOutExecProcess += 1
+        if self.cntTimeOutExecProcess >= 30:
+            errorCode = self.checkErrorCode()
+
+            self.isExecProcess_loadUnload = False
+            self.pusherStatus = PusherStatus.ERROR
+            self.pusherError = PusherError.LOAD_UNLOAD
+            self.replyMessage('S' + self.rxMessage[1:5] + errorCode)
+
+
+    def checkErrorCode(self):
+        errorCode = '001'
+
+        if self.pusherError == PusherError.PUSHER_FRONT:
+            errorCode = '010'
+        if self.pusherError == PusherError.PUSHER_BACK:
+            errorCode = '011'
+
+
+
+
         pass
 
     def execProcess_unit0p(self):
