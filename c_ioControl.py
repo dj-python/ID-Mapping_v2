@@ -42,9 +42,9 @@ class MainPusher:
         self.gpioIn2 = Pin(12, Pin.IN)
         self.gpioIn3 = Pin(13, Pin.IN)
 
-        self.gpioIn4 = Pin(22, Pin.IN)
-        self.gpioIn5 = Pin(26, Pin.IN)
-        self.gpioIn6 = Pin(27, Pin.IN)
+        self.gpioIn_ipSel1 = Pin(22, Pin.IN)
+        self.gpioIn_ipSel2 = Pin(26, Pin.IN)
+        self.gpioIn_ipSel3 = Pin(27, Pin.IN)
 
         self.gpioIn_pusherBack = None
         self.gpioIn_PusherFront = None
@@ -90,15 +90,23 @@ class MainPusher:
         target.value(not value)
 
     def get_gpioIn(self):
+
+        self.gpioIn_sel.on()
+        time.sleep_us(1)
         self.gpioIn_pusherBack = not self.gpioIn0.value()
         self.gpioIn_PusherFront = not self.gpioIn1.value()
         self.gpioIn_PusherUp = not self.gpioIn2.value()
         self.gpioIn_PusherDown = not self.gpioIn3.value()
-        self.gpioIn_Light = not self.gpioIn4.value()
-        self.gpioIn_PushButtonLeft = not self.gpioIn5.value()
-        self.gpioIn_PushButtonRight = not self.gpioIn6.value()
+
+        self.gpioIn_sel.off()
+        time.sleep_us(1)
+        self.gpioIn_Light = not self.gpioIn0.value()
+        self.gpioIn_PushButtonLeft = not self.gpioIn1.value()
+        self.gpioIn_PushButtonRight = not self.gpioIn2.value()
 
     def func_10msec(self):
+        self.get_gpioIn()
+
         message, address = TCPClient.receive_data()
         if message is not None:
             self.rxMessage = message.decode('utf-8')
