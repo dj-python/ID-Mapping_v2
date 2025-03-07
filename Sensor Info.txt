@@ -6,8 +6,8 @@
 Model Name : Q5_Wide
 
 * Recon layout
-Vertical = 2                    # 세로열 제품 갯수
-Horizontal = 6                  # 가로열 제품 갯수
+Vertical : 2                    # 세로열 제품 갯수
+Horizontal : 6                  # 가로열 제품 갯수
 
 * Power setting
 pwr1, 0x01, 0x00, 0x092        # slave address(Mux)(TBD), 파워업 시퀀스, 전압값

@@ -20,11 +20,8 @@ class MainGUI:
         self.MainWindow.show()
         self.currentTime = ''
 
-        self.apply_stylesheet('style.qss')
+        #self.apply_stylesheet('style.qss')
 
-    def apply_stylesheet(self, path):
-        with open(path, 'r') as file:
-            self.setStyleSheet(file.read())
 
         # 취득한 Sensor ID 변수 : 두번 확인해서 비교해야 하므로 2개씩 할당
         self.SensorID1 = None
@@ -36,8 +33,8 @@ class MainGUI:
         self.connMain = ''
 
         # region button clicked
-        self.ui.pushButton_connect.clicked.connect(self.connection)
-        self.ui.pushButton_Get_SensorID.clicked.connect(self.open_file_dialog)
+        self.ui.pushButton_OpenModelData.clicked.connect(self.OpenModelData)
+        self.ui.pushButton_READY.clicked.connect(self.get_ready)
 
         # txt 파일로부터 읽어오는 Info 변수
         self.file_open = None
@@ -46,33 +43,67 @@ class MainGUI:
         self.serverIp = '127.0.0.0'
         self.serverPort = 8000
 
+        self.model_name = None
+        self.Decoding = None
+        self.AFDriverSlave = None
+
         sys.exit(app.exec_())
 
-    # 클라이언트와 연결
-    def connection(self):
-        self.connMain = TCPServer(self, self.serverIp, self.serverPort)
-        self.connMain.data_received.connect(self.update_text_browser)
 
-        self.connMain.start()
-        self.update_text_browser("[*] 서버 시작됨")
-
-    def open_file_dialog(self):
+    # 'Open Model Data'를 클릭하면 Sensor Info 파일을 열고 정보 display
+    def OpenModelData(self):
         options = QtWidgets.QFileDialog.Options()
         options |= QtWidgets.QFileDialog.ReadOnly
         file_name, _ = QtWidgets.QFileDialog.getOpenFileName(self.MainWindow, "Open txt File", "Text Files (*.txt);;All files (*)", options=options)
         if file_name:
             self.Send_Info(file_name)
 
+        # model name display
+        self.model_name = self.extract_info('Model Name :')
+        self.ui.textBrowser_ModelName.append(self.model_name)
+        # Decoding 여부 display
+        self.Decoding = self.extract_info('Decoding Enable = ')
+        if self.Decoding == '1':
+            self.ui.textBrowser_decoding.append('Enable')
+        else :
+            self.ui.textBrowser_decoding.append('Disable')
+        # AF Driver IC 접근 여부 display
+        self.AFDriverSlave = self.extract_info('AF Driver IC (if necessary), ')
+        if self.AFDriverSlave is not None:
+            self.ui.textBrowser_AFDriverIC.append(self.AFDriverSlave)
+        else :
+            self.ui.textBrowser_AFDriverIC.append('not access')
 
-    # 텍스트 파일에서 '0x' 이후의 문자열만 추출하여 각 변수에 저장
-    def Sensor_extract_info(self, index):
-        if '0x' in self.All_Info_data[index]:
-            start_index = self.All_Info_data[index].index('0x')
-            extracted_value = self.All_Info_data[index][start_index+2:start_index+6]
-            if extracted_value is not None:
-                print(extracted_value)
-                return extracted_value
-            return ''
+
+
+    def get_ready(self):
+        self.connMain = TCPServer(self, self.serverIp, self.serverPort)
+        self.connMain.data_received.connect(self.update_text_browser)
+
+        self.connMain.start()
+        self.update_text_browser("[*] 서버 시작됨")
+
+
+    # 텍스트 파일에서 특정 문구를 찾아 그 이후의 문자를 리턴
+    def extract_info(self, text):
+        self.file_open = open('Sensor Info.txt', 'r')
+        self.All_Info_data = self.file_open.read()
+        self.file_open.close()
+
+        for index in range(len(self.All_Info_data)):
+            line = self.All_Info_data[index].strip()
+
+            if text in line:
+                start_index = line.index(text)
+                extracted_value = line[start_index+len(text):start_index+len(text)+4]
+                if extracted_value:
+                    print(extracted_value)
+                    return extracted_value
+                return ''
+
+
+
+
 
     # Sensor Info.txt 파일을 한줄씩 PICO로 전송
     def Send_Info(self, file_path):
@@ -99,14 +130,6 @@ class MainGUI:
         except Exception as e:
             self.update_text_browser(f"[Error] 파일 읽기 실패 : {str(e)}")
 
-
-
-
-
-
-
-
-
     def update_text_browser(self, className, obj, msg):                 # 여러 인스턴스로부터 시그널을 받을 때 구분하기 위해 className, obj 인수 설정
         self.ui.textBrowser_Log.append(msg)
 
@@ -118,34 +141,16 @@ if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
 
     main_app = MainGUI()
-    main_app.show()
+    main_app.MainWindow.show()
 
     sys.exit(app.exec_())
 
 
 
 
+
 """
-        # txt 파일로부터 읽어온 Info 리스트를 각 변수에 할당
-        def read_Sensor_info(self):
-            self.file_open = open('Sensor Info.txt', 'r')
-            self.All_Info_data = self.file_open.readlines()
-            self.file_open.close()
-            print(self.All_Info_data)
-
-            config.Slave_IDs = 'H10' + ''.join(self.extract_info(i) for i in range(4,8))
-            config.Write_Protections = 'H11' + ''.join(self.extract_info(i) for i in range(10, 13))
-            config.Sensor_Streaming_Resister_Addresses = 'H12' + ''.join(self.extract_info(i) for i in range(13, 18))
-            config.Sensor_Streaming_Datas = 'H13' + ''.join(self.extract_info(i) for i in range(19, 24))
-            config.Sensor_Reading_Resister_Addresses = 'H14' + ''.join(self.extract_info(i) for i in range(25, 28))
-            config.Sensor_Write_Resister_Addresses = 'H15' + ''.join(self.extract_info(i) for i in range(29, 34))
-            config.Sensor_Write_Datas = 'H16' + ''.join(self.extract_info(i) for i in range(35, 40))
-            config.Sensor_Read_Resister_Addresses = 'H17' + ''.join(self.extract_info(i) for i in range(41, 48))
-            config.EEPROM_Writing_Resister_Addresses = 'H18' + ''.join(self.extract_info(i) for i in range(49, 54))
-
-            # txt 파일로부터 읽어온 데이터를 textBrowser에 표시
-            for i in range(4, 24):
-                extracted_info = self.extract_info(i)
-                if extracted_info:
-                    self.ui.textBrowser_model_data.append(config.All_Info[i] + ' = 0x' + self.extract_info)
+    def apply_stylesheet(self, path):
+        with open(path, 'r') as file:
+            self.setStyleSheet(file.read())
 """
