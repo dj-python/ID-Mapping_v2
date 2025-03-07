@@ -1,14 +1,13 @@
 # Entry Point
 
 import time
-from ID_Mapping_Test_UI import Ui_MainWindow
-from PyQt5 import QtWidgets
+from ID_Mapping_GUI import Ui_MainWindow
+from PyQt5 import QtWidgets, QtGui, QtCore
 import sys
 from PyQt5.QtCore import pyqtSignal, QThread
 import socket
 from c_tcp_server import TCPServer
 import os
-
 
 class MainGUI:
     def __init__(self):
@@ -20,6 +19,12 @@ class MainGUI:
         self.update_widgets()
         self.MainWindow.show()
         self.currentTime = ''
+
+        self.apply_stylesheet('style.qss')
+
+    def apply_stylesheet(self, path):
+        with open(path, 'r') as file:
+            self.setStyleSheet(file.read())
 
         # 취득한 Sensor ID 변수 : 두번 확인해서 비교해야 하므로 2개씩 할당
         self.SensorID1 = None
