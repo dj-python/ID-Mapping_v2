@@ -46,6 +46,8 @@ class MainGUI:
         self.model_name = None
         self.Decoding = None
         self.AFDriverSlave = None
+        self.Barcode_data_send = None
+        self.Barcode_data_check = None
 
         sys.exit(app.exec_())
 
@@ -83,26 +85,26 @@ class MainGUI:
         self.connMain.start()
         self.update_text_browser("[*] 서버 시작됨")
 
+    # 검사 시작을 위한 Pusher 이동
+    def pusherLoad(self):
+        self.
+
+
+
 
     # 텍스트 파일에서 특정 문구를 찾아 그 이후의 문자를 리턴
     def extract_info(self, text):
-        self.file_open = open('Sensor Info.txt', 'r')
-        self.All_Info_data = self.file_open.read()
-        self.file_open.close()
+        with open('Sensor Info.txt', 'r', encoding='utf-8') as file_open:
+            self.All_Info_data = file_open.readlines()
 
-        for index in range(len(self.All_Info_data)):
-            line = self.All_Info_data[index].strip()
-
+        for line in self.All_Info_data:
+            line = line.strip()
             if text in line:
                 start_index = line.index(text)
-                extracted_value = line[start_index+len(text):start_index+len(text)+4]
+                extracted_value = line[start_index + len(text):].strip()
                 if extracted_value:
-                    print(extracted_value)
                     return extracted_value
-                return ''
-
-
-
+        return ''
 
 
     # Sensor Info.txt 파일을 한줄씩 PICO로 전송
