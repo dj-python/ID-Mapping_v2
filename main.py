@@ -30,7 +30,20 @@ class MainGUI:
         # 연속실행 변수
         self.isExecProcess = False
 
-        self.connMain = ''
+        self.connMain = []
+
+        # 서버 IP와 포트 목록
+        self.server_addresses = [
+            {'ip': '127.0.0.1', 'port': 8001},
+            {'ip': '127.0.0.1', 'port': 8002},
+            {'ip': '127.0.0.1', 'port': 8003},
+            {'ip': '127.0.0.1', 'port': 8004},
+            {'ip': '127.0.0.1', 'port': 8005},
+            {'ip': '127.0.0.1', 'port': 8006},
+            {'ip': '127.0.0.1', 'port': 8007},
+            {'ip': '127.0.0.1', 'port': 8008},
+        ]
+
 
         # region button clicked
         self.ui.pushButton_OpenModelData.clicked.connect(self.OpenModelData)
@@ -39,9 +52,6 @@ class MainGUI:
         # txt 파일로부터 읽어오는 Info 변수
         self.file_open = None
         self.All_Info_data = None
-
-        self.serverIp = '127.0.0.0'
-        self.serverPort = 8000
 
         self.model_name = None
         self.Decoding = None
@@ -79,15 +89,16 @@ class MainGUI:
 
 
     def get_ready(self):
-        self.connMain = TCPServer(self, self.serverIp, self.serverPort)
-        self.connMain.data_received.connect(self.update_text_browser)
-
-        self.connMain.start()
-        self.update_text_browser("[*] 서버 시작됨")
+        for address in self.server_addresses:
+            server = TCPServer(self, address['ip'], address['port'])
+            server.data_received.connect(self.update_text_browser)
+            server.start()
+            self.connMain.append(server)
+            self.update_text_browser(f"[*] 서버 시작됨 ({address['ip']}:{address['port']})")
 
     # 검사 시작을 위한 Pusher 이동
     def pusherLoad(self):
-        self.
+        pass
 
 
 
@@ -123,8 +134,9 @@ class MainGUI:
 
             for line in self.All_Info_data:
                 try :
-                    self.connMain.conn.sendall(line.encode('utf-8'))
-                    self.update_text_browser(f"[서버] 데이터 전송 : {line.strip()}")
+                    for server in self.connMain:
+                        server.conn.sendall(line.encode('utf-8'))
+                        self.update_text_browser(f"[서버] 데이터 전송 : {line.strip()}")
                     time.sleep(0.01)
                 except Exception as e:
                     self.update_text_browser(f"[Error] 데이터 전송 실패: {str(e)}")
@@ -132,8 +144,8 @@ class MainGUI:
         except Exception as e:
             self.update_text_browser(f"[Error] 파일 읽기 실패 : {str(e)}")
 
-    def update_text_browser(self, className, obj, msg):                 # 여러 인스턴스로부터 시그널을 받을 때 구분하기 위해 className, obj 인수 설정
-        self.ui.textBrowser_Log.append(msg)
+    def update_text_browser(self, source, msg):                 # 여러 인스턴스로부터 시그널을 받을 때 구분하기 위해 className, obj 인수 설정
+        self.ui.textBrowser_Log.append(f"{source}: {msg})
 
 
     def update_widgets(self):
