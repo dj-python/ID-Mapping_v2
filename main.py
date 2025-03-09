@@ -145,7 +145,7 @@ class MainGUI:
             self.update_text_browser(f"[Error] 파일 읽기 실패 : {str(e)}")
 
     def update_text_browser(self, source, msg):                 # 여러 인스턴스로부터 시그널을 받을 때 구분하기 위해 className, obj 인수 설정
-        self.ui.textBrowser_Log.append(f"{source}: {msg})
+        self.ui.textBrowser_Log.append(f"{source}: {msg}")
 
 
     def update_widgets(self):
