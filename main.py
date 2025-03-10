@@ -1,7 +1,7 @@
 # Entry Point
 
 import time
-from ID_Mapping_GUI import Ui_MainWindow
+from v_mainWindow import Ui_MainWindow
 from PyQt5 import QtWidgets, QtGui, QtCore
 import sys
 from PyQt5.QtCore import pyqtSignal, QThread
@@ -21,7 +21,6 @@ class MainGUI:
         self.currentTime = ''
 
         #self.apply_stylesheet('style.qss')
-
 
         # 취득한 Sensor ID 변수 : 두번 확인해서 비교해야 하므로 2개씩 할당
         self.SensorID1 = None
@@ -73,18 +72,6 @@ class MainGUI:
         # model name display
         self.model_name = self.extract_info('Model Name :')
         self.ui.textBrowser_ModelName.append(self.model_name)
-        # Decoding 여부 display
-        self.Decoding = self.extract_info('Decoding Enable = ')
-        if self.Decoding == '1':
-            self.ui.textBrowser_decoding.append('Enable')
-        else :
-            self.ui.textBrowser_decoding.append('Disable')
-        # AF Driver IC 접근 여부 display
-        self.AFDriverSlave = self.extract_info('AF Driver IC (if necessary), ')
-        if self.AFDriverSlave is not None:
-            self.ui.textBrowser_AFDriverIC.append(self.AFDriverSlave)
-        else :
-            self.ui.textBrowser_AFDriverIC.append('not access')
 
 
 
@@ -100,9 +87,6 @@ class MainGUI:
     def pusherLoad(self):
         pass
 
-
-
-
     # 텍스트 파일에서 특정 문구를 찾아 그 이후의 문자를 리턴
     def extract_info(self, text):
         with open('Sensor Info.txt', 'r', encoding='utf-8') as file_open:
@@ -116,7 +100,6 @@ class MainGUI:
                 if extracted_value:
                     return extracted_value
         return ''
-
 
     # Sensor Info.txt 파일을 한줄씩 PICO로 전송
     def Send_Info(self, file_path):
