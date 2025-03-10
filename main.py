@@ -33,6 +33,7 @@ class MainGUI:
 
         # 서버 IP와 포트 목록
         self.server_addresses = [
+            {'ip': '127.0.0.1', 'port': 8000},
             {'ip': '127.0.0.1', 'port': 8001},
             {'ip': '127.0.0.1', 'port': 8002},
             {'ip': '127.0.0.1', 'port': 8003},
@@ -41,12 +42,9 @@ class MainGUI:
             {'ip': '127.0.0.1', 'port': 8006},
             {'ip': '127.0.0.1', 'port': 8007},
             {'ip': '127.0.0.1', 'port': 8008},
+            {'ip': '127.0.0.1', 'port': 8010},
+
         ]
-
-
-        # region button clicked
-        self.ui.pushButton_OpenModelData.clicked.connect(self.OpenModelData)
-        self.ui.pushButton_READY.clicked.connect(self.get_ready)
 
         # txt 파일로부터 읽어오는 Info 변수
         self.file_open = None
@@ -58,6 +56,13 @@ class MainGUI:
         self.Barcode_data_send = None
         self.Barcode_data_check = None
 
+        # Populate customer folders
+        self.populate_customer_folders()
+        # 고객명이 선택되면 폴더 내의 스크립트 파일명을 모델명 콤보박스에 추가하는 시그널 연결
+        self.ui.cb_customerName.currentIndexChanged.connect(self.populate_model_files)
+        # 모델을 선택하면 통신준비와 Sensor Info.txt 파일 내용을 Wirte card로 전송하는 시그널 연결
+        self.ui.cb_selectedModel.currentIndexChanged.connect(self.on_model_selected)
+
         sys.exit(app.exec_())
 
 
@@ -68,11 +73,6 @@ class MainGUI:
         file_name, _ = QtWidgets.QFileDialog.getOpenFileName(self.MainWindow, "Open txt File", "Text Files (*.txt);;All files (*)", options=options)
         if file_name:
             self.Send_Info(file_name)
-
-        # model name display
-        self.model_name = self.extract_info('Model Name :')
-        self.ui.textBrowser_ModelName.append(self.model_name)
-
 
 
     def get_ready(self):
@@ -101,7 +101,7 @@ class MainGUI:
                     return extracted_value
         return ''
 
-    # Sensor Info.txt 파일을 한줄씩 PICO로 전송
+    # Sensor Info.txt 파일을 한줄씩 Write card로 전송
     def Send_Info(self, file_path):
         try :
             if not os.path.exists(file_path):
@@ -128,11 +128,40 @@ class MainGUI:
             self.update_text_browser(f"[Error] 파일 읽기 실패 : {str(e)}")
 
     def update_text_browser(self, source, msg):                 # 여러 인스턴스로부터 시그널을 받을 때 구분하기 위해 className, obj 인수 설정
-        self.ui.textBrowser_Log.append(f"{source}: {msg}")
+        self.ui.textBrowser_4.append(f"{source}: {msg}")
 
 
     def update_widgets(self):
         self.MainWindow.setWindowTitle('PyQt5 GUI')
+
+    # 고객 폴더들을 스캔하여 콤보박스에 추가 (프로그램 실행되면 자동 실행)
+    def populate_customer_folders(self):
+        customer_folder_path = os.path.join(os.getcwd(), 'customer')
+        if os.path.exists(customer_folder_path) and os.path.isdir(customer_folder_path):
+            subfolders = [f.name for f in os.scandir(customer_folder_path) if f.is_dir()]
+            self.ui.cb_customerName.addItems(subfolders)
+
+    # 고객 폴더가 지정되면 폴더 내 스크립트들을 콤보박스에 추가 (고객명 콤보박스 선택되면 자동 실행)
+    def populate_model_files(self):
+        selected_customer = self.ui.cb_customerName.currentText()
+        if selected_customer:
+            model_folder_path = os.path.join(os.getcwd(), 'customer', selected_customer)
+            if os.path.exists(model_folder_path) and os.path.isdir(model_folder_path):
+                model_files = [f.name for f in os.scandir(model_folder_path) if f.is_file() and f.name.endswith('.txt')]
+                self.ui.cb_selectedModel.clear()
+                self.ui.cb_selectedModel.addItems(model_files)
+
+    # 통신 준비 및 스크립트를 Wirte card에 전송 (모델명 콤보박스 선택되면 자동 실행)
+    def on_model_selected(self):
+        selected_model = self.ui.cb_selectedModel.currentText()
+        if selected_model:
+            self.ui.lbl_equipmentId.setText(f"Model Name: {selected_model}")
+            self.update_text_browser(f"Model Selected : {selected_model}")
+            self.get_ready()
+            model_folder_path = os.path.join(os.getcwd(), 'customer', self.ui.cb_customerName.currentText())
+            file_path = os.path.join(model_folder_path, selected_model)
+            self.Send_Info(file_path)
+
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
